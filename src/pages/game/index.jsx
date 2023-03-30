@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigation } from 'react-router-dom';
 import { questions, shuffle} from '../../database/questions';
+import LogoQuiz from '../../assets/images/quiz.png';
+import Score from '../score'
 
 import './styles.css';
-import LogoQuiz from '../../assets/images/quiz.png';
 
 function Game() {
-  const navigate = useNavigation();
+  // const navigate = useNavigation();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [questionSelected, setquestionSelected] = useState([]);
-  const [userAwnsers, setuserAwnsers] = useState([]);
+  const [userAnwsers, setuserAwnsers] = useState([]);
+  const [finish, setFinish] = useState(false);
 
-  useEffect(()=>{
+  useEffect(() => {
     if (questionSelected.length > 0) 
       return  
 
@@ -20,32 +22,44 @@ function Game() {
     setquestionSelected(selectedQuestions);
   },[questionSelected])
 
+  function handleAnswer(selectOptionIndex) {
+    const currentQuestionData = questionSelected[currentQuestion];
+    const userAnswer = currentQuestionData.answers[Number(selectOptionIndex)];
+    setuserAwnsers([...userAnwsers, userAnswer]);
+
+    if (currentQuestion < 4) {
+      setCurrentQuestion(currentQuestion + 1);
+    }else{
+      setFinish(true);
+    }
+  }
+
+  const currentQuestionData = questionSelected[currentQuestion];
+
+  if (finish) {
+    const correctAnswers = userAnwsers.filter(answer => answer.correct === true).length;
+    return <Score score={correctAnswers}/>
+  }
+
   return (
     <div className="container">
       <img src={LogoQuiz} alt="Logo Quiz" className='logo' />
       <div className="card">
         <div className="card-questao">
-          <h2 className='card-titulo'>Pergunta 1 de 5</h2>
-          <p className='questao'>Qual a melhor linguagem de programação?</p>
+          <h2 className='card-titulo'>Pergunta {currentQuestion + 1} de 5</h2>
+          <p className='questao'>{currentQuestionData?.question}</p>
         </div>
 
         <div className="card-resposta">
           <div className="card-opcao">
-            <button className='card-opcao'>
-              JavaScript
-            </button>
-            <button className='card-opcao'>
-              Python
-            </button>
-            <button className='card-opcao'>
-              C#
-            </button>
-            <button className='card-opcao'>
-              Java
-            </button>
-            <button className='card-opcao'>
-              C++
-            </button>
+            {currentQuestionData?.answers.map((option, index) => (
+              <button 
+                key={index} 
+                className='card-opcao' 
+                onClick={() => handleAnswer(index)}>
+                {option.text}
+              </button>
+            ))}
           </div>
         </div>
       </div>
